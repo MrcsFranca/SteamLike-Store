@@ -24,9 +24,12 @@ typedef struct {
 int createGame(GamePage *store, int vector_size);
 void removeGame(GamePage *store, int vector_size);
 void updateGame(GamePage *store, int vector_size);
-void showContent(GamePage *store, int vector_size);
+void showContent(GamePage *store, int pos);
+void showAllContent(GamePage *store, int vector_size);
+
 void actions();
 void ordenate(GamePage *store, int vector_size);
+int binarySearch(GamePage *store, int begin, int end, string search);
 string convertString(string num_players);
 
 
@@ -34,6 +37,7 @@ void updateVector(GamePage *store, int vector_size);
 
 int main(void) {
     int vector_size = 0, action = 0;
+    string search;
     GamePage *store = new(nothrow) GamePage[1000];
     if (!store) {
         cout << "Out of memory" << endl;
@@ -48,7 +52,7 @@ int main(void) {
     system("cls|clear");
     actions();
 
-    while (cin >> action && (action == 0 || action == 1 || action == 2 || action == 3 || action == 4)) {
+    while (cin >> action && (action == 0 || action == 1 || action == 2 || action == 3 || action == 4 || action == 5)) {
         system("cls|clear");
         actions();
         switch (action) {
@@ -81,9 +85,24 @@ int main(void) {
                 break;
             case 4:
                 ordenate(store, vector_size);
+                int pos;
+                system("cls|clear");
+                cout << "digite o nome do jogo que quer pesquisar" << endl;
+                cin.ignore();
+                getline(cin, search);
+                pos = binarySearch(store, 0, vector_size - 1, search);
+                if (pos == 0) {
+                    cout << "O jogo não existe na base de dados" << endl;
+                    actions();
+                }
+                else {
+                    showContent(store, pos);
+                }
+                break;
+            case 5:
+                showAllContent(store, vector_size);
                 break;
         }
-        showContent(store, vector_size);
     }
         cout << "Entrada inválida" << endl << "Encerrando programa" << endl;
         return -1;
@@ -91,7 +110,7 @@ int main(void) {
 
 void actions() {
     cout << "O que fazer?" << endl;
-    cout << "0 - Fechar programa" << endl << "1 - adicionar jogo" << endl << "2 - remover jogo" << endl << "3 - alterar jogo" << endl << "4 - pesquisar" << endl;
+    cout << "0 - Fechar programa" << endl << "1 - adicionar jogo" << endl << "2 - remover jogo" << endl << "3 - alterar jogo" << endl << "4 - pesquisar" << endl << "5 - mostrar todo conteúdo da loja" << endl;
 }
 
 int createGame(GamePage *store, int vector_size) {
@@ -183,7 +202,7 @@ void removeGame(GamePage *store, int vector_size) {
     system("cls|clear");
     cin.ignore();
     cout << "Qual jogo deseja remover? (Insira o título corretamente)" << endl;
-    showContent(store, vector_size);
+    showAllContent(store, vector_size);
     getline(cin, removing);
     for (int i = 0; i < (vector_size + 1); i++) {
         if ((store + i)->title == removing) {
@@ -208,7 +227,7 @@ void updateGame(GamePage *store, int vector_size) {
     system("cls|clear");
     cin.ignore();
     cout << "Qual jogo deseja alterar? (Insira o título corretamente)" << endl;
-    showContent(store, vector_size);
+    showAllContent(store, vector_size);
     getline(cin, game_to_update);
     for (int i = 0; i < (vector_size + 1); i++) {
         if (game_to_update == (store + i)->title) {
@@ -276,12 +295,23 @@ void updateGame(GamePage *store, int vector_size) {
     system("cls|clear");
 }
 
-void showContent(GamePage *store, int vector_size) {
+void showContent(GamePage *store, int pos) {
+    cout << endl << "----- JOGOS -----" << endl;
+        if ((store + pos)->title != "") {
+            cout << "Titulo: " << (store + pos)->title << endl << "Categoria: " << (store + pos)->category << endl << "Desenvolvedor: " << (store + pos)->developer << endl << "Pulicação: " << (store + pos)->publishment.day << "/" << (store + pos)->publishment.month << "/" << (store + pos)->publishment.year << endl << "Avaliação geral: " << (store + pos)->note << endl << "Preço: R$" << (store + pos)->price << endl << "Tempo de jogo: " << (store + pos)->time_to_beat << " horas" << endl << "Número de jogadores: " << (store + pos)->num_players << endl << "Idioma: " << (store + pos)->language << endl;
+        }
+    cout << endl;
+}
+
+void showAllContent(GamePage *store, int vector_size) {
     cout << endl << "----- JOGOS -----" << endl;
     for (int i = 0; i < vector_size; i++) {
-        cout << "Titulo: " << (store + i)->title << endl << "Categoria: " << (store + i)->category << endl << "Desenvolvedor: " << (store + i)->developer << endl << "Pulicação: " << (store + i)->publishment.day << "/" << (store + i)->publishment.month << "/" << (store + i)->publishment.year << endl << "Avaliação geral: " << (store + i)->note << endl << "Preço: R$" << (store + i)->price << endl << "Tempo de jogo: " << (store + i)->time_to_beat << " horas" << endl << "Número de jogadores: " << (store + i)->num_players << endl << "Idioma: " << (store + i)->language << endl;
+        if ((store + i)->title != "") {
+            cout << "Titulo: " << (store + i)->title << endl << "Categoria: " << (store + i)->category << endl << "Desenvolvedor: " << (store + i)->developer << endl << "Pulicação: " << (store + i)->publishment.day << "/" << (store + i)->publishment.month << "/" << (store + i)->publishment.year << endl << "Avaliação geral: " << (store + i)->note << endl << "Preço: R$" << (store + i)->price << endl << "Tempo de jogo: " << (store + i)->time_to_beat << " horas" << endl << "Número de jogadores: " << (store + i)->num_players << endl << "Idioma: " << (store + i)->language << endl;
+        }
         //cout << (store + i)->title << (store + i)->category << endl; 
     }
+    cout << endl;
 }
 
 void ordenate(GamePage *store, int vector_size) {
@@ -294,6 +324,25 @@ void ordenate(GamePage *store, int vector_size) {
         }
     }
     ordenate(store, vector_size - 1);
+}
+
+int binarySearch(GamePage *store, int begin, int end, string search) {
+    if (begin > end) {
+        return 0;
+    }
+    
+    int mid;
+    mid = begin + (end - begin) / 2;
+    if ((store + mid)->title == search) {
+        return mid;
+    }
+
+    if ((store + mid)->title > search) {
+        return binarySearch(store, begin, mid - 1, search);
+    }
+
+    return binarySearch(store, mid + 1, end, search);
+
 }
 
 string convertString(string temp_string) {
