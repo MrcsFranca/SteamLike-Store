@@ -64,11 +64,15 @@ int main(void) {
                 return 0;
             case 1:
                 system("cls|clear");
+                if (vector_size > 1) {
+                    ordenate(store, vector_size);
+                }
                 vector_size = createGame(store, vector_size);
                 actions();
                 break;
             case 2:
                 if (vector_size > 0) {
+                    ordenate(store, vector_size);
                     removeGame(store, vector_size);
                     system("cls|clear");
                 }
@@ -79,8 +83,15 @@ int main(void) {
                 actions();
                 break;
             case 3:
-                updateGame(store, vector_size);
-                system("cls|clear");
+                if (vector_size > 0) {
+                    ordenate(store, vector_size);
+                    updateGame(store, vector_size);
+                    system("cls|clear");
+                }
+                else {
+                    system("cls|clear");
+                    cout << "ainda não há jogos na loja" << endl << endl; 
+                }
                 actions();
                 break;
             case 4:
@@ -100,6 +111,7 @@ int main(void) {
                 }
                 break;
             case 5:
+                ordenate(store, vector_size);
                 showAllContent(store, vector_size);
                 break;
         }
@@ -122,19 +134,33 @@ int createGame(GamePage *store, int vector_size) {
     */
 
     // cin >> (store + vector_size)->title >> (store + vector_size)->category >> (store + vector_size)->developer >> (store + vector_size)->publishment.day >> (store + vector_size)->publishment.month >> (store + vector_size)->publishment.year >> (store + vector_size)->note >> (store + vector_size)->price >> (store + vector_size)->time_to_beat >> (store + vector_size)->num_players >> (store + vector_size)->language;
+    int pos;
     string temp_string;
+    bool valid_name = false;
     cin.ignore();
     cout << "digite o título do jogo" << endl;
     getline(cin, (store + vector_size)->title);
     if (vector_size >= 1) {
-        for (int i = 0; (i < (vector_size + 1)) || ((store + vector_size)->title == (store + i)->title); i++) {
-            if ((store + vector_size)->title == (store + i)->title) {
-                temp_string = (store + i)->title;
+        while (!valid_name) {
+            if ((store + vector_size)->title != temp_string) {
+                valid_name = true;
             }
-        }
-        while ((store + vector_size)->title == temp_string) {
-            cout << "o jogo ja existe" << endl;
-            getline(cin, (store + vector_size)->title);
+            pos = binarySearch(store, 0, vector_size - 1, (store + vector_size)->title);
+            temp_string = (store + pos)->title;
+            if ((store + vector_size)->title == temp_string) {
+                valid_name = false;
+            }
+            if ((store + vector_size)->title == temp_string) {
+                cout << "o jogo ja existe" << endl;
+                getline(cin, (store + vector_size)->title);
+            }
+            /*
+            for (int i = 0; (i < (vector_size + 1)) || ((store + vector_size)->title == (store + i)->title); i++) {
+                if ((store + vector_size)->title == (store + i)->title) {
+                    temp_string = (store + i)->title;
+                }
+            }
+            */
         }
     }
 
@@ -198,27 +224,25 @@ int createGame(GamePage *store, int vector_size) {
 }
 
 void removeGame(GamePage *store, int vector_size) {
+    int pos;
     string removing;
     system("cls|clear");
     cin.ignore();
     cout << "Qual jogo deseja remover? (Insira o título corretamente)" << endl;
     showAllContent(store, vector_size);
     getline(cin, removing);
-    for (int i = 0; i < (vector_size + 1); i++) {
-        if ((store + i)->title == removing) {
-           (store + i)->title = ""; 
-           (store + i)->category = "";
-           (store + i)->developer = "";
-           (store + i)->publishment.day = 0;
-           (store + i)->publishment.month = 0;
-           (store + i)->publishment.year = 0;
-           (store + i)->note = 0;
-           (store + i)->price = 0;
-           (store + i)->time_to_beat = 0;
-           (store + i)->num_players = "";
-           (store + i)->language = "";
-        }
-    }
+    pos = binarySearch(store, 0, vector_size - 1, removing);
+    (store + pos)->title = ""; 
+    (store + pos)->category = "";
+    (store + pos)->developer = "";
+    (store + pos)->publishment.day = 0;
+    (store + pos)->publishment.month = 0;
+    (store + pos)->publishment.year = 0;
+    (store + pos)->note = 0;
+    (store + pos)->price = 0;
+    (store + pos)->time_to_beat = 0;
+    (store + pos)->num_players = "";
+    (store + pos)->language = "";
 }
 
 void updateGame(GamePage *store, int vector_size) {
@@ -229,12 +253,10 @@ void updateGame(GamePage *store, int vector_size) {
     cout << "Qual jogo deseja alterar? (Insira o título corretamente)" << endl;
     showAllContent(store, vector_size);
     getline(cin, game_to_update);
-    for (int i = 0; i < (vector_size + 1); i++) {
-        if (game_to_update == (store + i)->title) {
-            position = i;
-        }
-    }
+    position = binarySearch(store, 0, vector_size - 1, game_to_update);
+    createGame(store, position);
 
+    /*
     cout << "digite o título do jogo" << endl;
     getline(cin, (store + position)->title);
 
@@ -291,6 +313,7 @@ void updateGame(GamePage *store, int vector_size) {
 
     cout << "Selecione o idioma" << endl; 
     getline(cin, (store + position)->language);
+    */
     
     system("cls|clear");
 }
@@ -307,11 +330,10 @@ void showAllContent(GamePage *store, int vector_size) {
     cout << endl << "----- JOGOS -----" << endl;
     for (int i = 0; i < vector_size; i++) {
         if ((store + i)->title != "") {
-            cout << "Titulo: " << (store + i)->title << endl << "Categoria: " << (store + i)->category << endl << "Desenvolvedor: " << (store + i)->developer << endl << "Pulicação: " << (store + i)->publishment.day << "/" << (store + i)->publishment.month << "/" << (store + i)->publishment.year << endl << "Avaliação geral: " << (store + i)->note << endl << "Preço: R$" << (store + i)->price << endl << "Tempo de jogo: " << (store + i)->time_to_beat << " horas" << endl << "Número de jogadores: " << (store + i)->num_players << endl << "Idioma: " << (store + i)->language << endl;
+            cout << "Titulo: " << (store + i)->title << endl << "Categoria: " << (store + i)->category << endl << "Desenvolvedor: " << (store + i)->developer << endl << "Pulicação: " << (store + i)->publishment.day << "/" << (store + i)->publishment.month << "/" << (store + i)->publishment.year << endl << "Avaliação geral: " << (store + i)->note << endl << "Preço: R$" << (store + i)->price << endl << "Tempo de jogo: " << (store + i)->time_to_beat << " horas" << endl << "Número de jogadores: " << (store + i)->num_players << endl << "Idioma: " << (store + i)->language << endl << endl;
         }
         //cout << (store + i)->title << (store + i)->category << endl; 
     }
-    cout << endl;
 }
 
 void ordenate(GamePage *store, int vector_size) {
