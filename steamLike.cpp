@@ -1,6 +1,6 @@
 #include <iostream>
 #include <iomanip>
-#include <cctype>
+#include <fstream>
 
 using namespace std;
 
@@ -26,6 +26,7 @@ int createGame(GamePage *store, int vector_size);
 void removeGame(GamePage *store, int vector_size, string game_to_remove);
 void showContent(GamePage *store, int pos);
 void showAllContent(GamePage *store, int vector_size);
+void writeData(GamePage *store, int vector_size);
 
 void actions();
 void ordenate(GamePage *store, int vector_size);
@@ -53,7 +54,7 @@ int main(void) {
     system("cls|clear");
     actions();
 
-    while (cin >> action && (action == 0 || action == 1 || action == 2 || action == 3 || action == 4 || action == 5)) {
+    while (cin >> action && (action == 0 || action == 1 || action == 2 || action == 3 || action == 4 || action == 5 || action == 6)) {
         system("cls|clear");
         actions();
         switch (action) {
@@ -122,7 +123,6 @@ int main(void) {
                 }
                 else {
                     system("cls|clear");
-                    cout << "valor de pos: " << pos << endl;
                     showContent(store, pos);
                     actions();
                 }
@@ -130,6 +130,14 @@ int main(void) {
             case 5:
                 ordenate(store, vector_size);
                 showAllContent(store, vector_size);
+                break;
+            case 6:
+                try {
+                    writeData(store, vector_size); 
+                    throw runtime_error("erro ao salvar os dados");
+                } catch (const runtime_error &e) {
+                    cout << "Ocorreu um erro com o salvamento dos dados" << endl;
+                }
                 break;
         }
     }
@@ -139,7 +147,7 @@ int main(void) {
 
 void actions() {
     cout << "O que fazer?" << endl;
-    cout << "0 - Fechar programa" << endl << "1 - adicionar jogo" << endl << "2 - remover jogo" << endl << "3 - alterar jogo" << endl << "4 - pesquisar" << endl << "5 - mostrar todo conteúdo da loja" << endl;
+    cout << "0 - Fechar programa" << endl << "1 - adicionar jogo" << endl << "2 - remover jogo" << endl << "3 - alterar jogo" << endl << "4 - pesquisar" << endl << "5 - mostrar todo conteúdo da loja" << endl << "6 - salvar conteúdo da loja" << endl;
 }
 
 int createGame(GamePage *store, int vector_size) {
@@ -260,6 +268,18 @@ void showAllContent(GamePage *store, int vector_size) {
             cout << "Titulo: " << (store + i)->title << endl << "Categoria: " << (store + i)->category << endl << "Desenvolvedor: " << (store + i)->developer << endl << "Pulicação: " << (store + i)->publishment.day << "/" << (store + i)->publishment.month << "/" << (store + i)->publishment.year << endl << "Avaliação geral: " << (store + i)->note << endl << "Preço: R$" << (store + i)->price << endl << "Tempo de jogo: " << (store + i)->time_to_beat << " horas" << endl << "Número de jogadores: " << (store + i)->num_players << endl << "Idioma: " << (store + i)->language << endl << endl;
         }
     }
+}
+
+void writeData(GamePage *store, int vector_size) {
+    ofstream file;
+    file.open("data.csv");
+    file << "Título,Categoria,Desenvolvedor,Data de publicação, Avaliação, Preço, Tempo de jogo, Número de jogadores, Idioma" << endl;
+    for (int i = 0; i < vector_size; i++) {
+        if ((store + i)->title != "") {
+            file << (store + i)->title << ',' << (store + i)->category << ',' << (store + i)->developer << ',' << (store + i)->publishment.month << '/' << (store + i)->publishment.day << '/' << (store + i)->publishment.year << ',' << (store + i)->note << ',' << "R$" << (store + i)->price << ',' << (store + i)->time_to_beat << ',' << (store + i)->num_players << ',' << (store + i)->language << endl;
+        }
+    }
+   file.close(); 
 }
 
 void ordenate(GamePage *store, int vector_size) {
