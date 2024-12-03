@@ -1,5 +1,7 @@
 #include <iostream>
 #include <iomanip>
+#include <limits>
+#include <cassert>
 #include <fstream>
 
 using namespace std;
@@ -35,6 +37,8 @@ void admActions();
 void userActions();
 void ordenate(GamePage *vector, int vector_size);
 int binarySearch(GamePage *vector, int begin, int end, string search);
+int intVerify(int int_to_verify);
+float floatVerify(float int_to_verify);
 string convertString(string num_players);
 bool isAllDigits(int number);
 
@@ -43,12 +47,14 @@ void updateVector(GamePage *store, int store_size);
 
 int main(void) {
     int store_size = 1, action = 0, user, pos;
+    assert(store_size == 1);
     string search, temp_string;
     GamePage *store = new(nothrow) GamePage[1000];
     if (!store) {
         cout << "Sem memória suficiente" << endl;
         return -1;
     }
+    assert(store);
 
     system("cls|clear");
     cout << "Entrar como:" << endl << "1 - usuário" << endl << "2 - administrador" << endl;
@@ -326,45 +332,64 @@ int createGame(GamePage *store, int store_size) {
     getline(cin, (store + store_size)->developer);
 
     cout << "digite o mês de lançamento" << endl;
-    while (cin >> (store + store_size)->publishment.month && ((store + store_size)->publishment.month > 12 || (store + store_size)->publishment.month < 1)) {
-        cout << "Insira um mês válido" << endl;
+    cin >> (store + store_size)->publishment.month;
+    (store + store_size)->publishment.month = intVerify((store + store_size)->publishment.month);
+    while ((store + store_size)->publishment.month > 12 || (store + store_size)->publishment.month < 1) {
+        cout << "insira um mês válido" << endl;
+        cin >> (store + store_size)->publishment.month;
+        (store + store_size)->publishment.month = intVerify((store + store_size)->publishment.month);
     }
+
     cout << "digite o dia de lançamento" << endl;
-    if ((store + store_size)->publishment.month == 2) {
-        while (cin >> (store + store_size)->publishment.day && ((store + store_size)->publishment.day < 1 || (store + store_size)->publishment.day > 28)) {
-            cout << "insira um dia válido para o mês" << endl;
-        }
+    cin >> (store + store_size)->publishment.day;
+    (store + store_size)->publishment.day = intVerify((store + store_size)->publishment.day);
+    while (((store + store_size)->publishment.month == 2 && ((store + store_size)->publishment.day > 12 || (store + store_size)->publishment.day < 1)) || (store + store_size)->publishment.day > 31 || (store + store_size)->publishment.day < 1) {
+        cout << "insira um dia válido" << endl;
+        cin >> (store + store_size)->publishment.day;
+        (store + store_size)->publishment.day = intVerify((store + store_size)->publishment.day);
     }
-    else {
-        while (cin >> (store + store_size)->publishment.day && ((store + store_size)->publishment.day > 31 || (store + store_size)->publishment.day < 1)) {
-            cout << "Insira um dia válido" << endl;
-        }
-    }
+
     cout << "digite o ano de lançamento" << endl;
-    while (cin >> (store + store_size)->publishment.year && ((store + store_size)->publishment.year > 2024 || (store + store_size)->publishment.year < 1960)) {
-        cout << "Insira um ano válido" << endl;
+    cin >> (store + store_size)->publishment.year;
+    (store + store_size)->publishment.year = intVerify((store + store_size)->publishment.year);
+    while (((store + store_size)->publishment.year > 2024 || (store + store_size)->publishment.year < 1960)) {
+        cout << "insira um ano válido" << endl;
+        cin >> (store + store_size)->publishment.year;
+        (store + store_size)->publishment.year = intVerify((store + store_size)->publishment.year);
     }
 
     cout << "de uma nota de 0.0 a 5.0 ao jogo" << endl;
-    while (cin >> (store + store_size)->note && ((store + store_size)->note < 0 || (store + store_size)->note > 5)) {
-        cout << "avalie o jogo corretamente" << endl;
+    cin >> (store + store_size)->note;
+    (store + store_size)->note = floatVerify((store + store_size)->note);
+    while (((store + store_size)->note > 5 || (store + store_size)->note < 0)) {
+        cout << "insira uma avaliação válida" << endl;
+        cin >> (store + store_size)->note;
+        (store + store_size)->note = floatVerify((store + store_size)->note);
     }
 
     cout << "digite o preço do jogo" << endl;
-    while (cin >> (store + store_size)->price && ((store + store_size)->price > 400)) {
-        cout << "digite um preço justo" << endl;
+    cin >> (store + store_size)->price;
+    (store + store_size)->price = floatVerify((store + store_size)->price);
+    while (((store + store_size)->price > 400)) {
+        cout << "insira um preço justo" << endl;
+        cin >> (store + store_size)->price;
+        (store + store_size)->price = floatVerify((store + store_size)->price);
     }
 
     cout << "digite o tempo para zerar o jogo em horas" << endl;
-    while (cin >> (store + store_size)->time_to_beat && (store + store_size)->time_to_beat < 1) {
+    cin >> (store + store_size)->time_to_beat;
+    (store + store_size)->time_to_beat = intVerify((store + store_size)->time_to_beat);
+    while ((store + store_size)->time_to_beat < 1) {
         cout << "digite um tempo válido" << endl;
+        cin >> (store + store_size)->time_to_beat;
+        (store + store_size)->time_to_beat = intVerify((store + store_size)->time_to_beat);
     }
 
     cout << "Quanto jogadores podem jogar?" << endl << "- Single player" << endl << "- Multiplayer" << endl << "- Coop" << endl;
     cin.ignore();
     getline(cin, (store + store_size)->num_players);
     (store + store_size)->num_players = convertString((store + store_size)->num_players);
-    while ((store + store_size)->num_players != "SINGLE PLAYER" && (store + store_size)->num_players != "MULTIPLAYER" && (store + store_size)->num_players != "COOP") {
+    while ((store + store_size)->num_players != "single player" && (store + store_size)->num_players != "multiplayer" && (store + store_size)->num_players != "coop") {
         cout << "escolha uma opção válida" << endl;
         getline(cin, (store + store_size)->num_players);
         (store + store_size)->num_players = convertString((store + store_size)->num_players);
@@ -454,11 +479,31 @@ int binarySearch(GamePage *vector, int begin, int end, string search) {
 
 }
 
+int intVerify(int int_to_verify) {
+    while (cin.fail()) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "insira uma data válida" << endl;
+        cin >> int_to_verify; 
+    }
+    return int_to_verify;
+}
+
+float floatVerify(float float_to_verify) {
+    while (cin.fail()) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "insira um valor válido" << endl;
+        cin >> float_to_verify; 
+    }
+    return float_to_verify;
+}
+
 string convertString(string temp_string) {
     int i = 0;
     while (temp_string[i] != '\0') {
-        if (temp_string[i] >= 97 && temp_string[i] <= 122) {
-            temp_string[i] -= 32;
+        if (temp_string[i] >= 65 && temp_string[i] <= 90) {
+            temp_string[i] += 32;
         }
         i++;
     }
