@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <limits>
+#include <string>
 #include <cassert>
 #include <fstream>
 
@@ -29,6 +30,7 @@ int admLogin(GamePage *store, int store_size);
 int createGame(GamePage *store, int store_size);
 void removeGame(GamePage *vector, int vector_size, string game_to_remove);
 void showContent(GamePage *vector, int pos);
+int showUserContent(GamePage *store, int store_size);
 void showAllContent(GamePage *vector, int store_size);
 void writeData(GamePage *store, int store_size);
 int downloadContent(GamePage *store, int pos, GamePage *library, int library_size);
@@ -92,6 +94,7 @@ int userLogin(GamePage *store, int store_size) {
     int action = 0, pos;
     string search;
     system("cls|clear");
+    showUserContent(store, store_size);
     userActions();
     while (cin >> action && (action == 0 || action == 1 || action == 2 || action == 3 || action == 4)) {
         system("cls|clear");
@@ -425,6 +428,51 @@ void showContent(GamePage *vector, int pos) {
             cout << "Titulo: " << (vector + pos)->title << endl << "Categoria: " << (vector + pos)->category << endl << "Desenvolvedor: " << (vector + pos)->developer << endl << "Pulicação: " << (vector + pos)->publishment.day << "/" << (vector + pos)->publishment.month << "/" << (vector + pos)->publishment.year << endl << "Avaliação geral: " << (vector + pos)->note << endl << "Preço: R$" << (vector + pos)->price << endl << "Tempo de jogo: " << (vector + pos)->time_to_beat << " horas" << endl << "Número de jogadores: " << (vector + pos)->num_players << endl << "Idioma: " << (vector + pos)->language << endl;
         }
     cout << endl;
+}
+
+int showUserContent(GamePage *store, int store_size) {
+    int current_column;
+    store_size = 1;
+    ifstream file;
+    file.open("data.csv");
+    if (!file) {
+        cout << "Ocorreu um erro ao inicializar a loja..." << endl << "Tente novamente mais tarde" << endl;
+        return -1;
+    }
+    string line;
+    file.seekg(119);
+    current_column = 1;
+    int aux = current_column;
+    while (!file.eof()) {
+        getline(file, line);
+        stringstream ss(line);
+        string item;
+        while (getline(ss, item, ',')) {
+            cout << item << endl;
+            if (current_column == 1) {
+                (store + store_size)->title = item;
+            }
+            current_column++;
+            if (current_column == 2) {
+                (store + store_size)->category = item;
+            }
+            if (current_column == 3) {
+                (store + store_size)->developer = item;
+            }
+            if (current_column == 4) {
+                stringstream ss(item);
+                string sub_item;
+                while (getline(ss, sub_item, '/')) {
+                    (store + store_size)->publishment.day = stoi(sub_item);
+                }
+            }
+            store_size++;
+            current_column++;
+        }
+    }
+    showAllContent(store, store_size);
+    file.close();
+    return 0;
 }
 
 void showAllContent(GamePage *vector, int vector_size) {
