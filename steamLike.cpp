@@ -346,7 +346,7 @@ int createGame(GamePage *store, int store_size) {
     cout << "digite o dia de lançamento" << endl;
     cin >> (store + store_size)->publishment.day;
     (store + store_size)->publishment.day = intVerify((store + store_size)->publishment.day);
-    while (((store + store_size)->publishment.month == 2 && ((store + store_size)->publishment.day > 12 || (store + store_size)->publishment.day < 1)) || (store + store_size)->publishment.day > 31 || (store + store_size)->publishment.day < 1) {
+    while (((store + store_size)->publishment.month == 2 && ((store + store_size)->publishment.day > 28 || (store + store_size)->publishment.day < 1)) || (store + store_size)->publishment.day > 31 || (store + store_size)->publishment.day < 1) {
         cout << "insira um dia válido" << endl;
         cin >> (store + store_size)->publishment.day;
         (store + store_size)->publishment.day = intVerify((store + store_size)->publishment.day);
@@ -446,9 +446,28 @@ int showUserContent(GamePage *store, int store_size) {
     while (!file.eof()) {
         getline(file, line);
         stringstream ss(line);
-        string item;
-        while (getline(ss, item, ',')) {
-            cout << item << endl;
+        string title;
+        while (getline(ss, title, ',')) {
+            string category, developer, publish, note, price, time_to_beat, num_players, language;
+            getline(ss, category, ',');
+            getline(ss, developer, ',');
+            getline(ss, publish, ',');
+            getline(ss, note, ',');
+            getline(ss, price, ',');
+            getline(ss, time_to_beat, ',');
+            getline(ss, num_players, ',');
+            getline(ss, language, ',');
+            cout << "title: " << title << endl;
+            cout << "category: " << category << endl;
+            (store + store_size)->title = title;
+            (store + store_size)->category = category;
+
+
+
+
+            /*
+            (store + store_size)->title = item;
+            
             if (current_column == 1) {
                 (store + store_size)->title = item;
             }
@@ -459,16 +478,10 @@ int showUserContent(GamePage *store, int store_size) {
             if (current_column == 3) {
                 (store + store_size)->developer = item;
             }
-            if (current_column == 4) {
-                stringstream ss(item);
-                string sub_item;
-                while (getline(ss, sub_item, '/')) {
-                    (store + store_size)->publishment.day = stoi(sub_item);
-                }
-            }
+*/
             store_size++;
-            current_column++;
         }
+        current_column++;
     }
     showAllContent(store, store_size);
     file.close();
