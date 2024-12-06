@@ -30,7 +30,7 @@ int admLogin(GamePage *store, int store_size);
 int createGame(GamePage *store, int store_size);
 void removeGame(GamePage *vector, int vector_size, string game_to_remove);
 void showContent(GamePage *vector, int pos);
-int showUserContent(GamePage *store, int store_size);
+int loadStoreContent(GamePage *store, int store_size);
 void showAllContent(GamePage *vector, int store_size);
 void writeData(GamePage *store, int store_size);
 int downloadContent(GamePage *store, int pos, GamePage *library, int library_size);
@@ -94,9 +94,9 @@ int userLogin(GamePage *store, int store_size) {
     int action = 0, pos;
     string search;
     system("cls|clear");
-    showUserContent(store, store_size);
+    store_size = loadStoreContent(store, store_size);
     userActions();
-    while (cin >> action && (action == 0 || action == 1 || action == 2 || action == 3 || action == 4)) {
+    while (cin >> action && (action == 0 || action == 1 || action == 2 || action == 3 || action == 4 || action == 5)) {
         system("cls|clear");
         switch (action) {
             case 0:
@@ -156,10 +156,10 @@ int userLogin(GamePage *store, int store_size) {
                     system("cls|clear");
                     cin.ignore();
                     cout << "Qual jogo deseja remover? (Insira o título corretamente)" << endl;
-                    showAllContent(store, store_size);
+                    showAllContent(library, library_size);
                     getline(cin, search);
-                    ordenate(store, store_size);
-                    removeGame(store, store_size, search);
+                    ordenate(library, library_size);
+                    removeGame(library, library_size, search);
                     system("cls|clear");
                 }
                 else {
@@ -168,6 +168,10 @@ int userLogin(GamePage *store, int store_size) {
                 }
                 userActions();
                 break;
+            case 5:
+                system("cls||clear");
+                showAllContent(store, store_size);
+                userActions();
         }
     }
     cout << "Entrada inválida" << endl << "Encerrando programa" << endl;
@@ -182,6 +186,10 @@ int admLogin(GamePage *store, int store_size) {
     int action = 0, pos;
     string search;
     system("cls|clear");
+    cout << store_size << endl;
+    store_size = loadStoreContent(store, store_size - 1);
+    cout << store_size << endl;
+    cin.get();
     admActions();
     while (cin >> action && (action == 0 || action == 1 || action == 2 || action == 3 || action == 4 || action == 5 || action == 6)) {
         system("cls|clear");
@@ -252,8 +260,8 @@ int admLogin(GamePage *store, int store_size) {
                 }
                 else {
                     system("cls|clear");
-                    admActions();
                     showContent(store, pos);
+                    admActions();
                 }
                 break;
             case 5:
@@ -261,12 +269,7 @@ int admLogin(GamePage *store, int store_size) {
                 showAllContent(store, store_size);
                 break;
             case 6:
-                try {
-                    writeData(store, store_size); 
-                    throw runtime_error("erro ao salvar os dados");
-                } catch (const runtime_error &e) {
-                    cout << "Ocorreu um erro com o salvamento dos dados" << endl;
-                }
+                writeData(store, store_size); 
                 break;
         }
     }
@@ -281,7 +284,7 @@ void admActions() {
 
 void userActions() {
     cout << "O que deseja fazer?" << endl;
-    cout << "0 - Fechar programa" << endl << "1 - Pesquisar" << endl << "2 - Baixar jogo" << endl << "3 - Ver jogos baixados" << endl << "4 - Excluir jogo" << endl;
+    cout << "0 - Fechar programa" << endl << "1 - Pesquisar" << endl << "2 - Baixar jogo" << endl << "3 - Ver jogos baixados" << endl << "4 - Excluir jogo" << endl << "5 - Mostrar conteúdo da loja" << endl;
 }
 
 
@@ -430,62 +433,55 @@ void showContent(GamePage *vector, int pos) {
     cout << endl;
 }
 
-int showUserContent(GamePage *store, int store_size) {
+int loadStoreContent(GamePage *store, int store_size) {
     int current_column;
     store_size = 1;
     ifstream file;
-    file.open("data.csv");
-    if (!file) {
-        cout << "Ocorreu um erro ao inicializar a loja..." << endl << "Tente novamente mais tarde" << endl;
+    try {
+        file.open("data.csv");
+        if (!file) {
+            throw runtime_error("erro ao abrir loja");
+        }
+    } catch (const runtime_error &e) {
+        cout << "Arquivo de dados do conteúdo da loja não foi encontrado" << endl << endl;
         return -1;
     }
     string line;
     file.seekg(119);
     current_column = 1;
-    int aux = current_column;
     while (!file.eof()) {
         getline(file, line);
         stringstream ss(line);
-        string title;
-        while (getline(ss, title, ',')) {
-            string category, developer, publish, note, price, time_to_beat, num_players, language;
+        string title, category, developer, day, month, year, note, price, time_to_beat, num_players, language, item;
+        while (getline(ss, item, "")) {
+            getline(ss, title, ',');
             getline(ss, category, ',');
             getline(ss, developer, ',');
-            getline(ss, publish, ',');
+            getline(ss, day, '/');
+            getline(ss, month, '/');
+            getline(ss, year, ',');
             getline(ss, note, ',');
             getline(ss, price, ',');
             getline(ss, time_to_beat, ',');
             getline(ss, num_players, ',');
             getline(ss, language, ',');
-            cout << "title: " << title << endl;
-            cout << "category: " << category << endl;
             (store + store_size)->title = title;
             (store + store_size)->category = category;
-
-
-
-
-            /*
-            (store + store_size)->title = item;
-            
-            if (current_column == 1) {
-                (store + store_size)->title = item;
-            }
-            current_column++;
-            if (current_column == 2) {
-                (store + store_size)->category = item;
-            }
-            if (current_column == 3) {
-                (store + store_size)->developer = item;
-            }
-*/
-            store_size++;
+            (store + store_size)->developer = developer;
+            (store + store_size)->publishment.day = stoi(day);
+            (store + store_size)->publishment.month = stoi(month);
+            (store + store_size)->publishment.year = stoi(year);
+            (store + store_size)->note = stof(note);
+            price = price.substr(2);
+            (store + store_size)->price = stof(price);
+            (store + store_size)->time_to_beat = stoi(time_to_beat);
+            (store + store_size)->num_players = num_players;
+            (store + store_size)->language = language;
         }
-        current_column++;
+        store_size++;
     }
-    showAllContent(store, store_size);
     file.close();
-    return 0;
+    return store_size;
 }
 
 void showAllContent(GamePage *vector, int vector_size) {
@@ -499,7 +495,14 @@ void showAllContent(GamePage *vector, int vector_size) {
 
 void writeData(GamePage *store, int store_size) {
     ofstream file;
-    file.open("data.csv");
+    try {
+        file.open("data.csv", ios::out | ios::app);
+        if (!file) {
+            throw runtime_error("erro ao salvar os dados");
+        }
+    } catch (const runtime_error &e) {
+        cout << "Ocorreu um erro ao abrir o arquivo" << endl;
+    }
     file << "Título,Categoria,Desenvolvedor,Data de publicação, Avaliação, Preço, Tempo de jogo, Número de jogadores, Idioma" << endl;
     for (int i = 0; i < store_size; i++) {
         if ((store + i)->title != "") {
