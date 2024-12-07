@@ -32,7 +32,7 @@ void removeGame(GamePage *vector, int vector_size, string game_to_remove);
 void showContent(GamePage *vector, int pos);
 int loadStoreContent(GamePage *store, int store_size);
 void showAllContent(GamePage *vector, int store_size);
-void writeData(GamePage *store, int store_size);
+void writeData(GamePage *store, int store_size, int saved_size);
 int downloadContent(GamePage *store, int pos, GamePage *library, int library_size);
 
 void admActions();
@@ -137,7 +137,6 @@ int userLogin(GamePage *store, int store_size) {
                     userActions();
                 }
                 else {
-                    system("cls|clear");
                     library_size = downloadContent(store, pos, library, library_size);
                     userActions();
                 }
@@ -147,7 +146,7 @@ int userLogin(GamePage *store, int store_size) {
                     ordenate(library, library_size);
                     showAllContent(library, library_size);
                 } else {
-                    cout << "Você ainda não baixou nenhum jogo baixado" << endl << endl;
+                    cout << "Você ainda não baixou nenhum jogo" << endl << endl;
                 }
                 userActions();
                 break;
@@ -160,6 +159,7 @@ int userLogin(GamePage *store, int store_size) {
                     getline(cin, search);
                     ordenate(library, library_size);
                     removeGame(library, library_size, search);
+                    library_size--;
                     system("cls|clear");
                 }
                 else {
@@ -183,13 +183,11 @@ int userLogin(GamePage *store, int store_size) {
 }
 
 int admLogin(GamePage *store, int store_size) {
-    int action = 0, pos;
+    int action = 0, saved_size = 0, pos;
     string search;
     system("cls|clear");
-    cout << store_size << endl;
-    store_size = loadStoreContent(store, store_size - 1);
-    cout << store_size << endl;
-    cin.get();
+    store_size = loadStoreContent(store, store_size);
+    saved_size = store_size;
     admActions();
     while (cin >> action && (action == 0 || action == 1 || action == 2 || action == 3 || action == 4 || action == 5 || action == 6)) {
         system("cls|clear");
@@ -256,20 +254,25 @@ int admLogin(GamePage *store, int store_size) {
                 pos = binarySearch(store, 0, store_size - 1, search);
                 if (pos == 0) {
                     cout << "O jogo não existe na base de dados" << endl << endl;
-                    admActions();
                 }
                 else {
                     system("cls|clear");
                     showContent(store, pos);
-                    admActions();
                 }
+                admActions();
                 break;
             case 5:
+                system("cls|clear");
                 ordenate(store, store_size);
-                showAllContent(store, store_size);
+                if (store_size > 1) {
+                    showAllContent(store, store_size);
+                } else {
+                    cout << "Ainda não existem jogos na loja" << endl;
+                }
+                admActions();
                 break;
             case 6:
-                writeData(store, store_size); 
+                writeData(store, store_size, saved_size); 
                 break;
         }
     }
@@ -434,7 +437,6 @@ void showContent(GamePage *vector, int pos) {
 }
 
 int loadStoreContent(GamePage *store, int store_size) {
-    int current_column;
     store_size = 1;
     ifstream file;
     try {
@@ -444,16 +446,14 @@ int loadStoreContent(GamePage *store, int store_size) {
         }
     } catch (const runtime_error &e) {
         cout << "Arquivo de dados do conteúdo da loja não foi encontrado" << endl << endl;
-        return -1;
+        return 1;
     }
     string line;
     file.seekg(119);
-    current_column = 1;
     while (!file.eof()) {
-        getline(file, line);
-        stringstream ss(line);
-        string title, category, developer, day, month, year, note, price, time_to_beat, num_players, language, item;
-        while (getline(ss, item, "")) {
+        while (getline(file, line)) {
+            stringstream ss(line);
+            string title, category, developer, day, month, year, note, price, time_to_beat, num_players, language;
             getline(ss, title, ',');
             getline(ss, category, ',');
             getline(ss, developer, ',');
@@ -477,8 +477,8 @@ int loadStoreContent(GamePage *store, int store_size) {
             (store + store_size)->time_to_beat = stoi(time_to_beat);
             (store + store_size)->num_players = num_players;
             (store + store_size)->language = language;
+            store_size++;
         }
-        store_size++;
     }
     file.close();
     return store_size;
@@ -493,7 +493,7 @@ void showAllContent(GamePage *vector, int vector_size) {
     }
 }
 
-void writeData(GamePage *store, int store_size) {
+void writeData(GamePage *store, int store_size, int saved_size) {
     ofstream file;
     try {
         file.open("data.csv", ios::out | ios::app);
@@ -503,8 +503,11 @@ void writeData(GamePage *store, int store_size) {
     } catch (const runtime_error &e) {
         cout << "Ocorreu um erro ao abrir o arquivo" << endl;
     }
-    file << "Título,Categoria,Desenvolvedor,Data de publicação, Avaliação, Preço, Tempo de jogo, Número de jogadores, Idioma" << endl;
-    for (int i = 0; i < store_size; i++) {
+    file.seekp(0, ios::end);
+    if (file.tellp() == 0) {
+        file << "Título,Categoria,Desenvolvedor,Data de publicação,Avaliação,Preço,Tempo de jogo,Número de jogadores,Idioma" << endl;
+    }
+    for (int i = saved_size; i < store_size; i++) {
         if ((store + i)->title != "") {
             file << (store + i)->title << ',' << (store + i)->category << ',' << (store + i)->developer << ',' << (store + i)->publishment.month << '/' << (store + i)->publishment.day << '/' << (store + i)->publishment.year << ',' << (store + i)->note << ',' << "R$" << (store + i)->price << ',' << (store + i)->time_to_beat << ',' << (store + i)->num_players << ',' << (store + i)->language << endl;
         }
