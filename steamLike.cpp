@@ -42,7 +42,6 @@ int binarySearch(GamePage *vector, int begin, int end, string search);
 int intVerify(int int_to_verify);
 float floatVerify(float int_to_verify);
 string convertString(string num_players);
-bool isAllDigits(int number);
 
 
 void updateVector(GamePage *store, int store_size);
@@ -273,6 +272,7 @@ int admLogin(GamePage *store, int store_size) {
                 break;
             case 6:
                 writeData(store, store_size, saved_size); 
+                admActions();
                 break;
         }
     }
@@ -448,9 +448,9 @@ int loadStoreContent(GamePage *store, int store_size) {
         cout << "Arquivo de dados do conteúdo da loja não foi encontrado" << endl << endl;
         return 1;
     }
-    string line;
-    file.seekg(119);
+    file.seekg(114);
     while (!file.eof()) {
+        string line;
         while (getline(file, line)) {
             stringstream ss(line);
             string title, category, developer, day, month, year, note, price, time_to_beat, num_players, language;
@@ -494,6 +494,7 @@ void showAllContent(GamePage *vector, int vector_size) {
 }
 
 void writeData(GamePage *store, int store_size, int saved_size) {
+    system("rm data.csv|iel data.csv|erase data.csv");
     ofstream file;
     try {
         file.open("data.csv", ios::out | ios::app);
@@ -507,12 +508,13 @@ void writeData(GamePage *store, int store_size, int saved_size) {
     if (file.tellp() == 0) {
         file << "Título,Categoria,Desenvolvedor,Data de publicação,Avaliação,Preço,Tempo de jogo,Número de jogadores,Idioma" << endl;
     }
-    for (int i = saved_size; i < store_size; i++) {
+    for (int i = 0; i < store_size; i++) {
         if ((store + i)->title != "") {
             file << (store + i)->title << ',' << (store + i)->category << ',' << (store + i)->developer << ',' << (store + i)->publishment.month << '/' << (store + i)->publishment.day << '/' << (store + i)->publishment.year << ',' << (store + i)->note << ',' << "R$" << (store + i)->price << ',' << (store + i)->time_to_beat << ',' << (store + i)->num_players << ',' << (store + i)->language << endl;
         }
     }
    file.close(); 
+    system("cls|clear");
 }
 
 void ordenate(GamePage *vector, int vector_size) {
@@ -577,15 +579,6 @@ string convertString(string temp_string) {
     return temp_string;
 }
 
-bool isAllDigits(int number) {
-   string converted_number = to_string(number);
-   for (char c : converted_number) {
-       if (!isdigit(c)) {
-           return false;
-       }
-   }
-   return true;
-}
 
 /*
 void updateVector(GamePage *store, int store_size) {
